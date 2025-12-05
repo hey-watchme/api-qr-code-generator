@@ -98,27 +98,23 @@ def generate_qrcode(device_id: str) -> bytes:
 
 def upload_to_s3(file_content: bytes, s3_key: str) -> str:
     """
-    Upload QR code image to S3 and return presigned URL
-    Note: ACL='public-read' removed due to S3 Block Public Access settings
+    Upload QR code image to S3 with public-read ACL and return public URL
     """
     try:
-        # Upload to S3 without ACL (respects Block Public Access)
+        # Upload to S3 with public-read ACL
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
             Key=s3_key,
             Body=file_content,
             ContentType='image/png',
-            CacheControl='public, max-age=31536000'
+            CacheControl='public, max-age=31536000',
+            ACL='public-read'
         )
 
-        # Generate presigned URL (valid for 7 days)
-        presigned_url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': S3_BUCKET_NAME, 'Key': s3_key},
-            ExpiresIn=604800  # 7 days in seconds
-        )
+        # Return public S3 URL
+        public_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
 
-        return presigned_url
+        return public_url
     except ClientError as e:
         logger.error(f"S3 upload failed: {str(e)}")
         raise HTTPException(status_code=500, detail="S3 upload failed")
