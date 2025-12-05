@@ -2,6 +2,48 @@
 
 デバイス共有用のQRコードを生成・管理するAPIです。
 
+## ✅ 開発状況
+
+**開発完了・本番稼働中** (2025-12-06)
+
+### 完了した対応
+
+**✅ 専用S3バケット`watchme-qrcodes`を新規作成**
+
+1. **S3バケット設定**:
+   - バケット名: `watchme-qrcodes`
+   - リージョン: `ap-southeast-2` (Sydney)
+   - Block Public Access: **無効** (QRコードは公開アクセス可能)
+   - ACL: 有効（`public-read`で公開）
+   - バケットポリシー: 全ユーザーがGetObjectアクセス可能
+
+2. **IAM権限設定完了**:
+   - `watchme-api-user`に以下の権限を付与
+   - `s3:PutObject`, `s3:PutObjectAcl`, `s3:GetObject`, `s3:DeleteObject`, `s3:ListBucket`
+
+3. **環境変数更新完了**:
+   - EC2: `/home/ubuntu/watchme-api-qr-code-generator/.env` → `S3_BUCKET_NAME=watchme-qrcodes`
+   - GitHub Actions Secrets: `S3_BUCKET_NAME=watchme-qrcodes`
+
+4. **API実装変更完了**:
+   - Presigned URL方式を削除（7日間有効期限問題を解決）
+   - `ACL='public-read'`で永続的な公開URLを生成
+   - 公開URL形式: `https://watchme-qrcodes.s3.ap-southeast-2.amazonaws.com/devices/{device_id}/qrcode.png`
+
+5. **iOS実装完了**:
+   - QRCodeService.swift作成
+   - DeviceEditViewにQRコード表示UI追加
+   - 自動生成・表示機能実装済み
+
+### 動作確認済み
+
+- ✅ API呼び出し成功
+- ✅ QRコード画像生成・S3アップロード成功
+- ✅ 公開アクセス確認済み（HTTP 200）
+- ✅ iOSアプリでのQRコード表示成功
+
+---
+
 ## 📋 概要
 
 このAPIは、WatchMeプラットフォームでデバイスを共有するためのQRコードを生成します。
@@ -116,7 +158,7 @@ API_HOST=0.0.0.0
 
 | 項目 | 値 | 説明 |
 |-----|-----|------|
-| S3バケット名 | `watchme-avatars` | avatar-uploaderと共用 |
+| S3バケット名 | `watchme-qrcodes` | QRコード専用バケット |
 | AWSリージョン | `ap-southeast-2` | シドニー |
 | ポート | `8021` | EC2内部ポート |
 
@@ -167,7 +209,7 @@ API_HOST=0.0.0.0
 | | | |
 | **📥 データソース** | | |
 | └ 入力テーブル | `devices` | デバイスID検証 |
-| └ 出力先（S3） | `watchme-avatars/devices/{device_id}/qrcode.png` | QRコード画像 |
+| └ 出力先（S3） | `watchme-qrcodes/devices/{device_id}/qrcode.png` | QRコード画像 |
 | └ 出力テーブル | `devices.qr_code_url` | S3 URL保存 |
 
 ---
@@ -194,7 +236,7 @@ POST /v1/devices/{device_id}/qrcode
 - **レスポンス**:
   ```json
   {
-    "qrCodeUrl": "https://watchme-avatars.s3.ap-southeast-2.amazonaws.com/devices/{device_id}/qrcode.png"
+    "qrCodeUrl": "https://watchme-qrcodes.s3.ap-southeast-2.amazonaws.com/devices/{device_id}/qrcode.png"
   }
   ```
 
@@ -238,17 +280,13 @@ COMMENT ON COLUMN devices.qr_code_url IS 'S3 URL of the QR code image for device
 ## 📁 S3バケット構造
 
 ```
-watchme-avatars/
-├── users/
-│   └── {user_id}/
-│       └── avatar.jpg
-├── subjects/
-│   └── {subject_id}/
-│       └── avatar.jpg
-└── devices/          # 新規追加
+watchme-qrcodes/
+└── devices/
     └── {device_id}/
         └── qrcode.png
 ```
+
+**注意**: アバター画像は別バケット(`watchme-avatars`)で管理されています。
 
 ---
 
@@ -323,7 +361,7 @@ curl https://api.hey-watch.me/qrcode/health
 curl -X POST https://api.hey-watch.me/qrcode/v1/devices/{device_id}/qrcode
 
 # レスポンス例:
-# {"qrCodeUrl":"https://watchme-avatars.s3.ap-southeast-2.amazonaws.com/devices/{device_id}/qrcode.png"}
+# {"qrCodeUrl":"https://watchme-qrcodes.s3.ap-southeast-2.amazonaws.com/devices/{device_id}/qrcode.png"}
 ```
 
 ---
@@ -365,3 +403,15 @@ curl -X POST https://api.hey-watch.me/qrcode/v1/devices/{device_id}/qrcode
 - [ ] QRコードのカスタマイズ機能（ロゴ埋め込み、カラー変更）
 - [ ] バッチ生成API（複数デバイスの一括生成）
 - [ ] キャッシュ機能（既存QRコードの再利用）
+
+---
+
+## 📝 変更履歴
+
+### 2025-12-06: 本番稼働開始
+
+- ✅ 専用S3バケット`watchme-qrcodes`作成・設定完了
+- ✅ IAM権限設定完了（`s3:PutObjectAcl`追加）
+- ✅ Presigned URL方式を削除、`ACL='public-read'`で永続URL生成に変更
+- ✅ iOS実装完了（QRCodeService、DeviceEditView）
+- ✅ 動作確認完了
