@@ -98,7 +98,7 @@ def generate_qrcode(device_id: str) -> bytes:
 
 def upload_to_s3(file_content: bytes, s3_key: str) -> str:
     """
-    Upload QR code image to S3
+    Upload QR code image to S3 with public-read ACL
     """
     try:
         s3_client.put_object(
@@ -106,7 +106,8 @@ def upload_to_s3(file_content: bytes, s3_key: str) -> str:
             Key=s3_key,
             Body=file_content,
             ContentType='image/png',
-            CacheControl='public, max-age=31536000'
+            CacheControl='public, max-age=31536000',
+            ACL='public-read'  # Make QR code image publicly accessible
         )
 
         # Generate S3 URL
