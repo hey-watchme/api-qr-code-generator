@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  qr-code-generator:
+    image: 754724220380.dkr.ecr.ap-southeast-2.amazonaws.com/watchme-api-qr-code-generator:latest
+    container_name: watchme-api-qr-code-generator
+    restart: unless-stopped
+    ports:
+      - "8020:8020"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+      - API_PORT=8020
+      - API_HOST=0.0.0.0
+    networks:
+      watchme-network:
+        ipv4_address: 172.27.0.20
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  watchme-network:
+    external: true
