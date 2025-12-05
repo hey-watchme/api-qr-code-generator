@@ -126,13 +126,13 @@ echo -e "${BLUE}🏥 Step 7: Running health check...${NC}"
 echo "Retrying for up to 60 seconds (12 attempts × 5 seconds)..."
 
 for i in {1..12}; do
-    if curl -f http://localhost:8020/health > /dev/null 2>&1; then
+    if curl -f http://localhost:8021/health > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Health check successful (attempt $i/12)${NC}"
         echo ""
 
         # Display detailed health check information
         echo "📊 Health check details:"
-        curl -s http://localhost:8020/health | python3 -m json.tool || echo "{}"
+        curl -s http://localhost:8021/health | python3 -m json.tool || echo "{}"
         echo ""
 
         # Final result
@@ -141,7 +141,7 @@ for i in {1..12}; do
         echo "========================================"
         echo ""
         echo "📦 Container name: ${CONTAINER_NAME}"
-        echo "🌐 Local URL: http://localhost:8020"
+        echo "🌐 Local URL: http://localhost:8021"
         echo "🌐 Production URL: https://api.hey-watch.me/qrcode/"
         echo "📋 Check logs: docker logs ${CONTAINER_NAME} -f"
         echo ""

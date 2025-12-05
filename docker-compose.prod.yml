@@ -6,7 +6,7 @@ services:
     container_name: watchme-api-qr-code-generator
     restart: unless-stopped
     ports:
-      - "8020:8020"
+      - "8021:8021"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -14,7 +14,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - AWS_REGION=${AWS_REGION}
-      - API_PORT=8020
+      - API_PORT=8021
       - API_HOST=0.0.0.0
     networks:
       watchme-network:

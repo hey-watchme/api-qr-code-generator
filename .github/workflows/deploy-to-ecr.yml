@@ -200,7 +200,7 @@ jobs:
           echo "🏥 Running health check..."
           sleep 10
           for i in {1..12}; do
-            if curl -f http://localhost:8020/health > /dev/null 2>&1; then
+            if curl -f http://localhost:8021/health > /dev/null 2>&1; then
               echo "✅ Health check passed (attempt $i/12)"
               break
             fi

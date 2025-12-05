@@ -218,6 +218,6 @@ async def general_exception_handler(request, exc):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("API_PORT", 8020))
+    port = int(os.getenv("API_PORT", 8021))
     host = os.getenv("API_HOST", "0.0.0.0")
     uvicorn.run("app:app", host=host, port=port, reload=True)
